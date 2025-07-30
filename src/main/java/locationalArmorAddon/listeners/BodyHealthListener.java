@@ -2,7 +2,6 @@ package locationalArmorAddon.listeners;
 
 import bodyhealth.api.BodyHealthAPI;
 import bodyhealth.api.events.BodyPartHealthChangeEvent;
-import bodyhealth.config.Debug;
 import locationalArmorAddon.Main;
 import locationalArmorAddon.config.Config;
 import locationalArmorAddon.core.BodyPartDamage;

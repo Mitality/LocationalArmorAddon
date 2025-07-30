@@ -12,7 +12,7 @@ import java.io.File;
 @AddonInfo(
         name = "LocationalArmorAddon",
         description = "Adds locational armor to BodyHealth",
-        version = "1.0.0",
+        version = "1.0.0-pre1",
         author = "Mitality"
 )
 public final class Main extends BodyHealthAddon {
