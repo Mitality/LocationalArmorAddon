@@ -1,0 +1,73 @@
+#    _                    _   _                   _    _
+#   | |    ___   ___ __ _| |_(_) ___  _ __   __ _| |  / \   _ __ _ __ ___   ___  _ __
+#   | |   / _ \ / __/ _` | __| |/ _ \| '_ \ / _` | | / _ \ | '__| '_ ` _ \ / _ \| '__|
+#   | |__| (_) | (_| (_| | |_| | (_) | | | | (_| | |/ ___ \| |  | | | | | | (_) | |
+#   |_____\___/ \___\__,_|\__|_|\___/|_| |_|\__,_|_/_/   \_\_|  |_| |_| |_|\___/|_|
+#       _       _     _             
+#      / \   __| | __| | ___  _ __       Adds locational armor to BodyHealth
+#     / _ \ / _` |/ _` |/ _ \| '_ \      Required BodyHealth version: 2.4.0+
+#    / ___ \ (_| | (_| | (_) | | | |     Required Minecraft version: 1.21.3+
+#   /_/   \_\__,_|\__,_|\___/|_| |_|     Addon version: ${project.version}
+#
+
+# Enables the functionality of this addon, making
+# armor only protect body parts that are covered
+locational-armor-enabled: true
+
+# Whether chestplates should also protect the 
+# hands, despite them not being fully covered
+chestplate-protects-hands: true
+
+# Precision used for binary search when estimating original damage
+# values. Lower values are more precise but slower. Default: 0.001
+binary-search-precision: 0.001
+
+# Let's have a little chat about how damage works and how you can configure it to behave differently.
+#
+# In vanilla Minecraft, incoming damage is reduced in a specific order (simplified):
+#   1. First, armor points and armor toughness reduce the incoming damage.
+#   2. Then, enchantments (like Protection) further reduce the remaining damage.
+#   3. Finally, active effects (like Resistance) reduce the damage even more.
+#
+# This addon calculates that process in reverse.
+# Instead of starting with incoming damage and applying reductions,
+# it starts with the final damage a specific body part would take — {base_damage} —
+# and works backward to reconstruct all intermediate damage values:
+#
+#   {base_damage}                    ...Amount of damage a body part would receive without any modification by this addon
+#   {pre_effect_damage}              ...Amount of damage before damage reduction by the resistance effect was applied
+#   {pre_enchantment_damage}         ...Amount of damage before damage reduction by effects and enchantments was applied
+#   {pre_armor_damage}               ...Amount of damage before damage reduction by effects, enchantments and armor stats was applied
+#
+#   {total_armor_absorption}         ...Amount of damage absorbed by the *entire* armor set, regardless of which part is hit
+#   {local_armor_absorption}         ...Amount of damage absorbed by the armor piece covering the *specific hit body part*
+#   {total_enchantment_absorption}   ...Amount of damage absorbed by *all enchantments* applied to the player's full armor set
+#   {local_enchantment_absorption}   ...Amount of damage absorbed by enchantments on the *specific armor piece* hit
+#   {effect_damage_absorption}       ...Amount of damage mitigated by active potion effects (e.g. Resistance)
+#
+#   {total_armor_reduction_ratio}          ...Percentage (0.0 - 0.8) of damage absorbed by the entire armor set. 0.8 means 80% of the damage is absorbed
+#   {local_armor_reduction_ratio}          ...Percentage (0.0 - 0.8) of damage absorbed by the armor piece covering the specific hit body part
+#   {total_enchantment_reduction_ratio}    ...Percentage (0.0 - 0.8) of damage absorbed by all enchantments on the entire armor set
+#   {local_enchantment_reduction_ratio}    ...Percentage (0.0 - 0.8) of damage absorbed by enchantments on the specific armor piece hit
+#   {effect_damage_reduction_ratio}        ...Percentage (0.0 - 1.0) of damage absorbed by active effects (e.g. Resistance). 1.0 means 100% absorption
+#
+# Without this addon, Minecraft would calculate damage like this:
+#
+#    "{pre_armor_damage} * (1 - {total_armor_reduction_ratio}) * (1 - {total_enchantment_reduction_ratio}) * (1 - {effect_damage_reduction_ratio})"
+#
+# Below, you can alter that formula to, for example, only consider local armor (armor that covers the hit part):
+#
+#   "{pre_armor_damage} * (1 - {local_armor_reduction_ratio}) * (1 - {total_enchantment_reduction_ratio}) * (1 - {effect_damage_reduction_ratio})"
+#
+# Note that, when only considering local armor, you will generally be less protected, so you might want to compensate that.
+# The easiest option to do that is by raising the max health values of all body parts in BodyHealth's config.yml,
+# but you can also accomplish this by altering the damage formula further.
+#
+#   Let's add nonlinear scaling to our formula, buffing local armor a bit,
+#   but with a lesser buff the stronger it is, maxing out at 80% damage
+#   reduction, just like a full armor set would in vanilla Minecraft:
+#
+#      "{pre_armor_damage} * (1 - 0.8 * (1 - (1 - {local_armor_reduction_ratio})^1.2)) * (1 - {total_enchantment_reduction_ratio}) * (1 - {effect_damage_reduction_ratio})"
+#
+# Now it's your turn to further tweak this formula, fully adapting it to your imagination. Have fun!
+formula: "{pre_armor_damage} * (1 - 0.8 * (1 - (1 - {local_armor_reduction_ratio})^1.2)) * (1 - {total_enchantment_reduction_ratio}) * (1 - {effect_damage_reduction_ratio})"
