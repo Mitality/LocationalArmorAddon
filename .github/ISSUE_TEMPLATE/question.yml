@@ -1,5 +1,5 @@
 name: Question
-description: Ask a question about BodyHealth
+description: Ask a question about this Addon
 labels: ["question"]
 body:
   - type: textarea
