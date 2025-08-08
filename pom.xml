@@ -78,7 +78,7 @@
         <dependency>
             <groupId>com.github.Mitality</groupId>
             <artifactId>BodyHealth</artifactId>
-            <version>a17a4cf356</version>
+            <version>11c53addcb</version>
             <scope>provided</scope>
         </dependency>
 

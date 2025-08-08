@@ -53,7 +53,7 @@ public class BodyHealthListener implements Listener {
             .replace("{local_enchantment_reduction_ratio}", String.valueOf(bodyPartDamage.LOCAL_ENCHANTMENT_REDUCTION_RATIO))
             .replace("{effect_damage_reduction_ratio}", String.valueOf(bodyPartDamage.EFFECT_DAMAGE_REDUCTION_RATIO));
 
-        double newDamage = BodyHealthAPI.evaluateMathExpression(formula);
+        double newDamage = BodyHealthAPI.getInstance().evaluateMathExpression(formula);
 
         Main.debug().logDev("Original Damage: " + damage);
         Main.debug().logDev("Modified Damage: " + newDamage);
