@@ -1,11 +1,9 @@
 package locationalArmorAddon.util;
 
-import bodyhealth.config.Debug;
 import bodyhealth.core.BodyPart;
 import com.google.common.collect.Multimap;
 import locationalArmorAddon.Main;
 import locationalArmorAddon.config.Config;
-import locationalArmorAddon.core.ArmorBaseStats;
 import locationalArmorAddon.math.DamageCalculator;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -18,9 +16,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PlayerUtils {
 
@@ -131,45 +129,67 @@ public class PlayerUtils {
 
         ItemStack item = player.getInventory().getItem(slot);
         if (item == null || item.getType().isAir()) return new ArmorStats(0, 0);
-        ArmorStats baseStats = ArmorBaseStats.get(item);
+
+        String key = switch (slot) {
+            case HEAD -> "helmet";
+            case CHEST -> "chestplate";
+            case LEGS -> "leggings";
+            case FEET -> "boots";
+            default -> "";
+        };
+
+        Collection<AttributeModifier> baseArmorPointModifiers = Objects.requireNonNull(player.getAttribute(Attribute.ARMOR))
+                .getModifiers().stream().filter(mod -> mod.getKey().getKey().equalsIgnoreCase("armor." + key)).toList();
+        Collection<AttributeModifier> baseArmorToughnessModifiers = Objects.requireNonNull(player.getAttribute(Attribute.ARMOR_TOUGHNESS))
+                .getModifiers().stream().filter(mod -> mod.getKey().getKey().equalsIgnoreCase("armor." + key)).toList();
+
+        double baseArmorPoints = evaluateAttributeModifiers(baseArmorPointModifiers);
+        double baseArmorToughness = evaluateAttributeModifiers(baseArmorToughnessModifiers);
 
         ItemMeta meta = item.getItemMeta();
-        if (meta == null) return baseStats;
+        if (meta == null) return new ArmorStats(baseArmorPoints, baseArmorToughness);
 
         Multimap<Attribute, AttributeModifier> modifiers = meta.getAttributeModifiers(slot);
-        if (modifiers.isEmpty()) return baseStats;
+        if (modifiers.isEmpty()) new ArmorStats(baseArmorPoints, baseArmorToughness);
 
-        double armor = baseStats.armorPoints;
-        double armorAddScalar = 0;
-        List<Double> armorMultiplyScalar1 = new ArrayList<>();
+        Collection<AttributeModifier> metaArmorPointModifiers = modifiers.get(Attribute.ARMOR);
+        Collection<AttributeModifier> metaArmorToughnessModifiers = modifiers.get(Attribute.ARMOR_TOUGHNESS);
 
-        double toughness = baseStats.armorToughness;
-        double toughnessAddScalar = 0;
-        List<Double> toughnessMultiplyScalar1 = new ArrayList<>();
+        Collection<AttributeModifier> combinedArmorPointModifiers = Stream.concat(
+                baseArmorPointModifiers.stream(),
+                metaArmorPointModifiers.stream()
+                        .filter(mod -> !mod.getKey().getKey().equalsIgnoreCase("armor." + key))
+        ).collect(Collectors.toSet());
 
-        for (AttributeModifier modifier : modifiers.get(Attribute.ARMOR)) {
+        Collection<AttributeModifier> combinedArmorToughnessModifiers = Stream.concat(
+                baseArmorToughnessModifiers.stream(),
+                metaArmorToughnessModifiers.stream()
+                        .filter(mod -> !mod.getKey().getKey().equalsIgnoreCase("armor." + key))
+        ).collect(Collectors.toSet());
+
+        double combinedArmorPoints = evaluateAttributeModifiers(combinedArmorPointModifiers);
+        double combinedArmorToughness = evaluateAttributeModifiers(combinedArmorToughnessModifiers);
+
+        return new ArmorStats(combinedArmorPoints, combinedArmorToughness);
+    }
+
+    private static double evaluateAttributeModifiers(Collection<AttributeModifier> modifiers) {
+
+        double value = 0;
+        double addScalar = 0;
+        List<Double> multiplyScalar1 = new ArrayList<>();
+
+        for (AttributeModifier modifier : modifiers) {
             switch (modifier.getOperation()) {
-                case ADD_NUMBER -> armor += modifier.getAmount();
-                case ADD_SCALAR -> armorAddScalar += modifier.getAmount();
-                case MULTIPLY_SCALAR_1 -> armorMultiplyScalar1.add(modifier.getAmount());
+                case ADD_NUMBER -> value += modifier.getAmount();
+                case ADD_SCALAR -> addScalar += modifier.getAmount();
+                case MULTIPLY_SCALAR_1 -> multiplyScalar1.add(modifier.getAmount());
             }
         }
 
-        for (AttributeModifier modifier : modifiers.get(Attribute.ARMOR_TOUGHNESS)) {
-            switch (modifier.getOperation()) {
-                case ADD_NUMBER -> toughness += modifier.getAmount();
-                case ADD_SCALAR -> toughnessAddScalar += modifier.getAmount();
-                case MULTIPLY_SCALAR_1 -> toughnessMultiplyScalar1.add(modifier.getAmount());
-            }
-        }
-
-        armor *= 1 + armorAddScalar;
-        for (double m : armorMultiplyScalar1) armor *= 1 + m;
-
-        toughness *= 1 + toughnessAddScalar;
-        for (double m : toughnessMultiplyScalar1) toughness *= 1 + m;
-
-        return new ArmorStats(armor, toughness);
+        value *= 1 + addScalar;
+        for (double m : multiplyScalar1) value *= 1 + m;
+        return value;
     }
 
 }
