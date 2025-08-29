@@ -33,24 +33,38 @@ public class BodyPartDamage {
         Main.debug().logDev("");
         Main.debug().logDev(player.getName() + "'s " + bodyPart.name() + " received " + baseDamage + " damage (type " + damageType.getKey().getKey().toUpperCase()  + ") with breach level " + breachLevel);
 
+        int resistanceLevel = PlayerUtils.getResistanceLevel(player);
+        Main.debug().logDev("Resistance effect level: " + resistanceLevel);
+
+        DamageCalculator.EnchantmentLevels totalEnchantmentLevels = PlayerUtils.getTotalEnchantmentLevels(player);
+        DamageCalculator.EnchantmentLevels localEnchantmentLevels = PlayerUtils.getLocalEnchantmentLevels(player, bodyPart);
+
+        PlayerUtils.ArmorStats totalArmorStats = PlayerUtils.getTotalArmorStats(player);
+        PlayerUtils.ArmorStats localArmorStats = PlayerUtils.getLocalArmorStats(player, bodyPart);
+
+        Main.debug().logDev("Total Armor Points: " + totalArmorStats.armorPoints());
+        Main.debug().logDev("Total Armor Toughness: " + totalArmorStats.armorToughness());
+        Main.debug().logDev("Local Armor Points: " + localArmorStats.armorPoints());
+        Main.debug().logDev("Local Armor Toughness: " + localArmorStats.armorToughness());
+
         DAMAGE_TYPE = damageType;
         BASE_DAMAGE = baseDamage;
 
-        PRE_EFFECT_DAMAGE = DamageCalculator.reverseEffectDamageReduction(BASE_DAMAGE, DAMAGE_TYPE, PlayerUtils.getResistanceLevel(player));
+        PRE_EFFECT_DAMAGE = DamageCalculator.reverseEffectDamageReduction(BASE_DAMAGE, DAMAGE_TYPE, resistanceLevel);
         EFFECT_DAMAGE_ABSORPTION = PRE_EFFECT_DAMAGE - BASE_DAMAGE;
-        EFFECT_DAMAGE_REDUCTION_RATIO = DamageCalculator.getEffectDamageReductionRatio(DAMAGE_TYPE, PlayerUtils.getResistanceLevel(player));
+        EFFECT_DAMAGE_REDUCTION_RATIO = DamageCalculator.getEffectDamageReductionRatio(DAMAGE_TYPE, resistanceLevel);
 
-        PRE_ENCHANTMENT_DAMAGE = DamageCalculator.reverseEnchantmentDamageReduction(PRE_EFFECT_DAMAGE, DAMAGE_TYPE, PlayerUtils.getTotalEnchantmentLevels(player));
+        PRE_ENCHANTMENT_DAMAGE = DamageCalculator.reverseEnchantmentDamageReduction(PRE_EFFECT_DAMAGE, DAMAGE_TYPE, totalEnchantmentLevels);
         TOTAL_ENCHANTMENT_ABSORPTION = PRE_ENCHANTMENT_DAMAGE - PRE_EFFECT_DAMAGE;
-        TOTAL_ENCHANTMENT_REDUCTION_RATIO = DamageCalculator.getEnchantmentDamageReductionRatio(DAMAGE_TYPE, PlayerUtils.getTotalEnchantmentLevels(player));
-        LOCAL_ENCHANTMENT_REDUCTION_RATIO = DamageCalculator.getEnchantmentDamageReductionRatio(DAMAGE_TYPE, PlayerUtils.getLocalEnchantmentLevels(player, bodyPart));
-        LOCAL_ENCHANTMENT_ABSORPTION = PRE_ENCHANTMENT_DAMAGE - DamageCalculator.applyEnchantmentDamageReduction(PRE_ENCHANTMENT_DAMAGE, DAMAGE_TYPE, PlayerUtils.getLocalEnchantmentLevels(player, bodyPart));
+        TOTAL_ENCHANTMENT_REDUCTION_RATIO = DamageCalculator.getEnchantmentDamageReductionRatio(DAMAGE_TYPE, totalEnchantmentLevels);
+        LOCAL_ENCHANTMENT_REDUCTION_RATIO = DamageCalculator.getEnchantmentDamageReductionRatio(DAMAGE_TYPE, localEnchantmentLevels);
+        LOCAL_ENCHANTMENT_ABSORPTION = PRE_ENCHANTMENT_DAMAGE - DamageCalculator.applyEnchantmentDamageReduction(PRE_ENCHANTMENT_DAMAGE, DAMAGE_TYPE, localEnchantmentLevels);
 
-        PRE_ARMOR_DAMAGE = DamageCalculator.reverseArmorDamageReduction(PRE_ENCHANTMENT_DAMAGE, DAMAGE_TYPE, PlayerUtils.getTotalArmorStats(player), breachLevel);
+        PRE_ARMOR_DAMAGE = DamageCalculator.reverseArmorDamageReduction(PRE_ENCHANTMENT_DAMAGE, DAMAGE_TYPE, totalArmorStats, breachLevel);
         TOTAL_ARMOR_ABSORPTION = PRE_ARMOR_DAMAGE - PRE_ENCHANTMENT_DAMAGE;
-        TOTAL_ARMOR_REDUCTION_RATIO = DamageCalculator.getArmorDamageReductionRatio(PRE_ARMOR_DAMAGE, DAMAGE_TYPE, PlayerUtils.getTotalArmorStats(player), breachLevel);
-        LOCAL_ARMOR_REDUCTION_RATIO = DamageCalculator.getArmorDamageReductionRatio(PRE_ARMOR_DAMAGE, DAMAGE_TYPE, PlayerUtils.getLocalArmorStats(player, bodyPart), breachLevel);
-        LOCAL_ARMOR_ABSORPTION = PRE_ARMOR_DAMAGE - DamageCalculator.applyArmorDamageReduction(PRE_ARMOR_DAMAGE, DAMAGE_TYPE, PlayerUtils.getLocalArmorStats(player, bodyPart), breachLevel);
+        TOTAL_ARMOR_REDUCTION_RATIO = DamageCalculator.getArmorDamageReductionRatio(PRE_ARMOR_DAMAGE, DAMAGE_TYPE, totalArmorStats, breachLevel);
+        LOCAL_ARMOR_REDUCTION_RATIO = DamageCalculator.getArmorDamageReductionRatio(PRE_ARMOR_DAMAGE, DAMAGE_TYPE, localArmorStats, breachLevel);
+        LOCAL_ARMOR_ABSORPTION = PRE_ARMOR_DAMAGE - DamageCalculator.applyArmorDamageReduction(PRE_ARMOR_DAMAGE, DAMAGE_TYPE, localArmorStats, breachLevel);
 
         Main.debug().logDev("");
         Main.debug().logDev("BASE_DAMAGE: " + BASE_DAMAGE);

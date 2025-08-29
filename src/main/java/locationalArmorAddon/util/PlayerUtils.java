@@ -1,9 +1,11 @@
 package locationalArmorAddon.util;
 
+import bodyhealth.config.Debug;
 import bodyhealth.core.BodyPart;
 import com.google.common.collect.Multimap;
 import locationalArmorAddon.Main;
 import locationalArmorAddon.config.Config;
+import locationalArmorAddon.core.ArmorBaseStats;
 import locationalArmorAddon.math.DamageCalculator;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -31,8 +33,6 @@ public class PlayerUtils {
 
         PotionEffect effect = player.getPotionEffect(PotionEffectType.RESISTANCE);
         if (effect == null) return 0;
-
-        Main.debug().logDev("Resistance effect level: " + effect.getAmplifier() + 1);
 
         // Potion levels are 0-based (e.g. level I = amplifier 0)
         return effect.getAmplifier() + 1;
@@ -114,9 +114,6 @@ public class PlayerUtils {
         double armor = armorAttribute != null ? armorAttribute.getValue() : 0;
         double toughness = toughnessAttribute != null ? toughnessAttribute.getValue() : 0;
 
-        Main.debug().logDev("Total Armor Points: " + armor);
-        Main.debug().logDev("Total Armor Toughness: " + toughness);
-
         return new ArmorStats(armor, toughness);
     }
 
@@ -134,18 +131,19 @@ public class PlayerUtils {
 
         ItemStack item = player.getInventory().getItem(slot);
         if (item == null || item.getType().isAir()) return new ArmorStats(0, 0);
+        ArmorStats baseStats = ArmorBaseStats.get(item);
 
         ItemMeta meta = item.getItemMeta();
-        if (meta == null) return new ArmorStats(0, 0);
+        if (meta == null) return baseStats;
 
         Multimap<Attribute, AttributeModifier> modifiers = meta.getAttributeModifiers(slot);
-        if (modifiers.isEmpty()) return new ArmorStats(0, 0);
+        if (modifiers.isEmpty()) return baseStats;
 
-        double armor = 0;
+        double armor = baseStats.armorPoints;
         double armorAddScalar = 0;
         List<Double> armorMultiplyScalar1 = new ArrayList<>();
 
-        double toughness = 0;
+        double toughness = baseStats.armorToughness;
         double toughnessAddScalar = 0;
         List<Double> toughnessMultiplyScalar1 = new ArrayList<>();
 
@@ -170,9 +168,6 @@ public class PlayerUtils {
 
         toughness *= 1 + toughnessAddScalar;
         for (double m : toughnessMultiplyScalar1) toughness *= 1 + m;
-
-        Main.debug().logDev("Local Armor Points: " + armor);
-        Main.debug().logDev("Local Armor Toughness: " + toughness);
 
         return new ArmorStats(armor, toughness);
     }
