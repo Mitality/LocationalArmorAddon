@@ -16,6 +16,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class PlayerUtils {
@@ -141,17 +143,17 @@ public class PlayerUtils {
 
         double armor = 0;
         double armorAddScalar = 0;
-        double armorMultiplyScalar1 = 0;
+        List<Double> armorMultiplyScalar1 = new ArrayList<>();
 
         double toughness = 0;
         double toughnessAddScalar = 0;
-        double toughnessMultiplyScalar1 = 0;
+        List<Double> toughnessMultiplyScalar1 = new ArrayList<>();
 
         for (AttributeModifier modifier : modifiers.get(Attribute.ARMOR)) {
             switch (modifier.getOperation()) {
                 case ADD_NUMBER -> armor += modifier.getAmount();
                 case ADD_SCALAR -> armorAddScalar += modifier.getAmount();
-                case MULTIPLY_SCALAR_1 -> armorMultiplyScalar1 += modifier.getAmount();
+                case MULTIPLY_SCALAR_1 -> armorMultiplyScalar1.add(modifier.getAmount());
             }
         }
 
@@ -159,12 +161,15 @@ public class PlayerUtils {
             switch (modifier.getOperation()) {
                 case ADD_NUMBER -> toughness += modifier.getAmount();
                 case ADD_SCALAR -> toughnessAddScalar += modifier.getAmount();
-                case MULTIPLY_SCALAR_1 -> toughnessMultiplyScalar1 += modifier.getAmount();
+                case MULTIPLY_SCALAR_1 -> toughnessMultiplyScalar1.add(modifier.getAmount());
             }
         }
 
-        armor = (armor * (1 + armorAddScalar)) * (1 + armorMultiplyScalar1);
-        toughness = (toughness * (1 + toughnessAddScalar)) * (1 + toughnessMultiplyScalar1);
+        armor *= 1 + armorAddScalar;
+        for (double m : armorMultiplyScalar1) armor *= 1 + m;
+
+        toughness *= 1 + toughnessAddScalar;
+        for (double m : toughnessMultiplyScalar1) toughness *= 1 + m;
 
         Main.debug().logDev("Local Armor Points: " + armor);
         Main.debug().logDev("Local Armor Toughness: " + toughness);
