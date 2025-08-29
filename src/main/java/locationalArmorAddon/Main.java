@@ -14,7 +14,7 @@ import java.io.File;
 @AddonInfo(
     name = "LocationalArmorAddon",
     description = "Adds locational armor to BodyHealth",
-    version = "1.0.0",
+    version = "1.0.1",
     author = "Mitality"
 )
 public final class Main extends BodyHealthAddon {
@@ -63,10 +63,6 @@ public final class Main extends BodyHealthAddon {
 
     public static Main getInstance() {
         return instance;
-    }
-
-    public static AddonFileManager getFileManager() {
-        return fileManager;
     }
 
     public static AddonDebug debug() {
