@@ -6,7 +6,7 @@
 
     <groupId>mitality</groupId>
     <artifactId>LocationalArmorAddon</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
 
     <name>LocationalArmorAddon</name>
@@ -79,7 +79,7 @@
         <dependency>
             <groupId>com.github.Mitality</groupId>
             <artifactId>BodyHealth</artifactId>
-            <version>3.0.0</version>
+            <version>fd1aea0a01</version>
             <scope>provided</scope>
         </dependency>
 

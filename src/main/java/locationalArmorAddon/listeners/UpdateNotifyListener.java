@@ -5,7 +5,7 @@ import bodyhealth.adventure.text.Component;
 import bodyhealth.adventure.text.event.ClickEvent;
 import bodyhealth.adventure.text.event.HoverEvent;
 import bodyhealth.adventure.text.format.NamedTextColor;
-import bodyhealth.colorparser.ColorParser;
+import bodyhealth.colorparser.bukkit.ColorParser;
 import bodyhealth.config.Config;
 import bodyhealth.util.UpdateChecker;
 import org.bukkit.entity.Player;
@@ -26,7 +26,7 @@ public class UpdateNotifyListener implements Listener {
         Player player = event.getPlayer();
 
         if (player.hasPermission("bodyhealth.update-notify") && updateChecker.isUpdateAvailable()) {
-            Component prefix = ColorParser.of(Config.prefix).parsePAPIPlaceholders(player).parseLegacy().build();
+            Component prefix = ColorParser.of(Config.prefix).papi(player).legacy().build();
             Component message = Component.text()
                     .append(prefix)
                     .append(Component.text("A new version of ", NamedTextColor.GREEN))

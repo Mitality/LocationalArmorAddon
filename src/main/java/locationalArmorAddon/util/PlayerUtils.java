@@ -75,7 +75,7 @@ public class PlayerUtils {
 
         EquipmentSlot localArmorPiece = switch (bodyPart) {
             case HEAD -> EquipmentSlot.HEAD;
-            case BODY -> EquipmentSlot.CHEST;
+            case TORSO -> EquipmentSlot.CHEST;
             case ARM_LEFT, ARM_RIGHT -> Config.chestplate_protects_hands ? EquipmentSlot.CHEST : null;
             case LEG_LEFT, LEG_RIGHT -> EquipmentSlot.LEGS;
             case FOOT_LEFT, FOOT_RIGHT -> EquipmentSlot.FEET;
@@ -119,7 +119,7 @@ public class PlayerUtils {
 
         EquipmentSlot slot = switch (bodyPart) {
             case HEAD -> EquipmentSlot.HEAD;
-            case BODY -> EquipmentSlot.CHEST;
+            case TORSO -> EquipmentSlot.CHEST;
             case ARM_LEFT, ARM_RIGHT -> Config.chestplate_protects_hands ? EquipmentSlot.CHEST : null;
             case LEG_LEFT, LEG_RIGHT -> EquipmentSlot.LEGS;
             case FOOT_LEFT, FOOT_RIGHT -> EquipmentSlot.FEET;

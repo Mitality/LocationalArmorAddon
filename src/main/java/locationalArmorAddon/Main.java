@@ -14,7 +14,7 @@ import java.io.File;
 @AddonInfo(
     name = "LocationalArmorAddon",
     description = "Adds locational armor to BodyHealth",
-    version = "1.0.1",
+    version = "1.0.2",
     author = "Mitality"
 )
 public final class Main extends BodyHealthAddon {
@@ -45,7 +45,7 @@ public final class Main extends BodyHealthAddon {
     }
 
     @Override
-    public void onBodyHealthReload() {
+    public void onAddonReload() {
         updateAndLoadConfig();
     }
 
